@@ -1,0 +1,25 @@
+📦 Как использовать шаблон для нового бота
+1. Скопируй папку шаблона
+bash
+cp -r ~/Рабочий\ стол/bot_template ~/Рабочий\ стол/имя_нового_бота
+2. Перейди в новую папку
+bash
+cd ~/Рабочий\ стол/имя_нового_бота
+3. Удали старый .git (если есть)
+bash
+rm -rf .git
+4. Создай нового бота у @BotFather, получи токен
+5. Вставь токен и свой ID в .env
+env
+TOKEN=твой_токен
+ADMINS=твой_telegram_id
+6. Создай и активируй виртуальное окружение
+bash
+python3 -m venv venv_bot
+source venv_bot/bin/activate
+7. Установи зависимости
+bash
+pip install -r requirements.txt
+8. Запусти бота
+bash
+python bot.py
