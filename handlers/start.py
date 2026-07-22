@@ -1,9 +1,15 @@
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
+from keyboards import main_menu
+
 
 router = Router()
 
-@router.message(Command("start"))
+@router.message()
 async def cmd_start(message: Message):
-    await message.answer("Привет! Я бот. Используй /help, чтобы узнать, что я умею.")
+    await message.answer(
+        "👋 Привет! Я бот-блокнот-напоминатель =).\n"
+        "📝 Выбери действие:",
+        reply_markup=main_menu
+    )

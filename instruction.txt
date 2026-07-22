@@ -23,3 +23,28 @@ pip install -r requirements.txt
 8. Запусти бота
 bash
 python bot.py
+
+9. Инициализаци гит
+git init
+git add .
+git commit -m '1st comment'
+
+
+10. Добавление и связка с GH
+Создаем новый репозитори на ГХ и копируем ссылку на него
+git remote add origin https://github.com/ваш-логин/my-project.git
+git push -u origin master   |OR|   git push -u origin main
+
+Все следующие разы (много раз):
+git add .
+git commit -m "обновление"
+git push
+
+11. Если надо поменять ветку по умолчанию 
+git branch      # показывает ветку по умолчанию
+git branch -m master main       # переименование
+git push -u origin main         # устанавливает связь между локальной веткой main и удалённой main на GitHub
+
+Settings -> General -> Default branch       # меняем ветку
+
+git push origin --delete master    # удаляем если надо
