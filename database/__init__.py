@@ -1,1 +1,1 @@
-# from .db import init_db, save_note, all_notes, get_note_by_name, clear_table
+from .db import init_db, save_note, show_all_notes, get_notes_by_name, delete_note, clear_table
