@@ -11,10 +11,13 @@ main_menu = InlineKeyboardMarkup(inline_keyboard=[
         InlineKeyboardButton(text="📃 Показать все заметки", callback_data="show_all_notes")
     ],
     [
-        InlineKeyboardButton(text="❓ Помощь", callback_data="help")
+        InlineKeyboardButton(text="⏰ Установить напоминание", callback_data="set_remind")
     ],
     [
         InlineKeyboardButton(text="🗑️ Удалить запись", callback_data='delete_note')
-    ]
+    ],
+    [
+        InlineKeyboardButton(text="❓ Помощь", callback_data="help")
+    ],
 ])
 

@@ -77,7 +77,7 @@ def update_remind_time(note_id: int, user_id: int, remind_at: str) -> bool:
     
         cursor.execute("""
             UPDATE notes
-            SET remind_at = ?
+            SET remind_at = ?, is_reminded = 0
             WHERE id = ? AND user_id = ?
         """, (remind_at, note_id, user_id))
     
