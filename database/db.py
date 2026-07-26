@@ -40,6 +40,49 @@ def save_note(user_id: int, note_name: str, note_text: str, remind_at: str) -> i
         logger.info(f"Заметка #{note_id} сохранена для пользователя {user_id}")
         return note_id
 
+def get_due_reminders() -> list:
+    """
+    Возвращает все напоминания, у которых наступило время,
+    и которые ещё не были отправлены.
+    """
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT id, user_id, note_name, note_text, remind_at
+            FROM notes
+            WHERE remind_at IS NOT NULL
+            AND remind_at <= datetime('now', 'localtime')
+            AND is_reminded = 0
+        """)
+        return cursor.fetchall()
+
+def mark_reminder_sent(note_id: int):
+    """Помечает напоминание как отправленное"""
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+    
+        cursor.execute("""
+            UPDATE notes
+            SET is_reminded = 1
+            WHERE id = ?
+        """, (note_id,))
+    
+        logger.info(f"Напоминание #{note_id} помечено как отправленное")
+
+def update_remind_time(note_id: int, user_id: int, remind_at: str) -> bool:
+    """Устанавливает время напоминания для заметки"""
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+    
+        cursor.execute("""
+            UPDATE notes
+            SET remind_at = ?
+            WHERE id = ? AND user_id = ?
+        """, (remind_at, note_id, user_id))
+    
+        return cursor.rowcount > 0
+
 def get_notes_by_name(user_id: int, search_term: str) -> list:
     """
     Ищет заметки по названию (частичное совпадение, без учёта регистра)
