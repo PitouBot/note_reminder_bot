@@ -5,7 +5,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from states import NoteForm
 from keyboards import main_menu
-from database import save_note, show_all_notes, get_notes_by_name, delete_note, update_remind_time
+from database import save_note, show_all_notes, get_notes_by_name, delete_note, update_remind_time, update_note
 from utils import parse_remind_time
 
 router = Router()
@@ -105,7 +105,7 @@ async def show_note_prompt(callback: CallbackQuery, state: FSMContext):
 async def search_note_by_name(message: Message, state: FSMContext):
     search_term = message.text.strip()
 
-    notes = get_notes_by_name(message.from_user.id, search_term)
+    notes = get_notes_by_name(message.from_user.id, search_term.lower())
 
     if not notes:
         await message.answer(
@@ -225,19 +225,18 @@ async def set_remind_time(message: Message, state: FSMContext):
 
     await state.clear()
 
-"""
 ###
-@router.callback_query(F.data == 'set_remind')
-async def wait_for_id(callback: CallbackQuery, state: FSMContext):
+@router.callback_query(F.data == 'edit_note')
+async def edit_note(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
-    await state.set_state(NoteForm.set_remind_id)
+    await state.set_state(NoteForm.edit_note_id)
     await callback.message.edit_text(
-        "🔎 Введите id заметки, у которой хотите установить/изменить время напоминания",
+        "🔎 Введите id заметки, у которой хотите изменить содержание",
         reply_markup=main_menu
     )
 
-@router.message(NoteForm.set_remind_id)
-async def set_remind_id(message: Message, state: FSMContext):
+@router.message(NoteForm.edit_note_id)
+async def edit_note_id(message: Message, state: FSMContext):
     id = message.text.strip()
     if not id.isdigit():
         await message.answer(
@@ -247,40 +246,23 @@ async def set_remind_id(message: Message, state: FSMContext):
         return  
 
     await state.update_data(note_id=int(id))
-    await state.set_state(NoteForm.set_remind_time)
+    await state.set_state(NoteForm.edit_note_text)
     await message.answer(
-            "🔎 Введите время напоминания\n"
-            "Примеры:\n"
-            "• `сегодня 18:00`\n"
-            "• `завтра 10:30`\n"
-            "• `через 2 часа`\n"
-            "• `2025-07-25 15:00`\n\n",
+            "Введите новый текст заметки",
             reply_markup=main_menu
         )
 
-@router.message(NoteForm.set_remind_time)
-async def set_remind_time(message: Message, state: FSMContext):
-    remind_dt = parse_remind_time(message.text.strip())
-    if not remind_dt:
-        await message.answer(
-            "❌ Неправильный формат времени.\n\n"
-            "Примеры:\n"
-            "• `сегодня 18:00`\n"
-            "• `завтра 10:30`\n"
-            "• `через 2 часа`\n"
-            "• `2025-07-25 15:00`\n\n"
-            "Или отправьте `пропустить`, чтобы не устанавливать напоминание."
-        )
-        return
-    
-    remind_at = remind_dt.strftime("%Y-%m-%d %H:%M:%S")
+@router.message(NoteForm.edit_note_text)
+async def edit_note_text(message: Message, state: FSMContext):
+    new_text = message.text.strip()
     data = await state.get_data()
     note_id = data.get('note_id')
-    success = update_remind_time(note_id, message.from_user.id, remind_at)
+
+    success = update_note(note_id, message.from_user.id, new_text)
 
     if success:
         await message.answer(
-            f'✅ Напоминание для заметки с id {note_id} было успешно установлено', 
+            f'✅ Содержимое для заметки с id {note_id} было успешно изменено', 
             reply_markup=main_menu
         )
     else:
@@ -291,7 +273,6 @@ async def set_remind_time(message: Message, state: FSMContext):
 
     await state.clear()
 
-###"""
 
 @router.callback_query(F.data == 'delete_note')
 async def del_note_prompt(callback: CallbackQuery, state: FSMContext):

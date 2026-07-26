@@ -17,6 +17,7 @@ def init_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
                 note_name TEXT NOT NULL,
+                note_name_lower TEXT NOT NULL,
                 note_text TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 remind_at TIMESTAMP,
@@ -31,9 +32,9 @@ def save_note(user_id: int, note_name: str, note_text: str, remind_at: str) -> i
         cursor = conn.cursor()
 
         cursor.execute("""
-            INSERT INTO notes (user_id, note_name, note_text, remind_at)
-            VALUES (?, ?, ?, ?)
-        """, (user_id, note_name, note_text, remind_at))
+            INSERT INTO notes (user_id, note_name, note_name_lower, note_text, remind_at)
+            VALUES (?, ?, ?, ?, ?)
+        """, (user_id, note_name, note_name.lower(), note_text, remind_at))
 
         note_id = cursor.lastrowid
 
@@ -83,6 +84,19 @@ def update_remind_time(note_id: int, user_id: int, remind_at: str) -> bool:
     
         return cursor.rowcount > 0
 
+def update_note(note_id: int, user_id: int, note_text: str) -> bool:
+    """Изменяет текст заметки"""
+    with sqlite3.connect(DB_PATH) as conn:
+            cursor = conn.cursor()
+        
+            cursor.execute("""
+                UPDATE notes
+                SET note_text = ?
+                WHERE id = ? AND user_id = ?
+            """, (note_text, note_id, user_id))
+        
+            return cursor.rowcount > 0
+
 def get_notes_by_name(user_id: int, search_term: str) -> list:
     """
     Ищет заметки по названию (частичное совпадение, без учёта регистра)
@@ -94,7 +108,7 @@ def get_notes_by_name(user_id: int, search_term: str) -> list:
         cursor.execute("""
             SELECT id, note_name, note_text, created_at, remind_at
             FROM notes
-            WHERE user_id = ? AND note_name LIKE ? COLLATE NOCASE
+            WHERE user_id = ? AND note_name_lower LIKE ?
             ORDER BY created_at DESC
         """, (user_id, f"%{search_term}%"))
         

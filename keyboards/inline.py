@@ -5,6 +5,9 @@ main_menu = InlineKeyboardMarkup(inline_keyboard=[
         InlineKeyboardButton(text="📝 Сделать заметку", callback_data="make_note")
     ],
     [
+        InlineKeyboardButton(text="✏️ Редактировать заметку", callback_data="edit_note")
+    ],
+    [
         InlineKeyboardButton(text="🔎 Найти и показать заметку", callback_data="show_note")
     ],
     [

@@ -8,5 +8,7 @@ class NoteForm(StatesGroup):
     note_id_for_deleting = State()
     set_remind_id = State()
     set_remind_time = State()
+    edit_note_id = State()
+    edit_note_text = State()
     
    

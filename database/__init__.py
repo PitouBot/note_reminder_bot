@@ -1,1 +1,1 @@
-from .db import init_db, save_note, show_all_notes, get_notes_by_name, delete_note, clear_table, get_due_reminders, mark_reminder_sent, update_remind_time
+from .db import init_db, save_note, show_all_notes, get_notes_by_name, delete_note, clear_table, get_due_reminders, mark_reminder_sent, update_remind_time, update_note
