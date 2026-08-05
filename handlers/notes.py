@@ -5,7 +5,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from states import NoteForm
 from keyboards import main_menu
-from database import save_note, show_all_notes, get_notes_by_name, delete_note, update_remind_time, update_note
+from database import save_note, show_all_notes, get_notes_by_name, delete_note, update_remind_time, update_note, clear_user_notes
 from utils import parse_remind_time
 
 router = Router()
@@ -309,4 +309,33 @@ async def del_note(message: Message, state: FSMContext):
     await state.clear()
         
        
+@router.callback_query(F.data == 'delete_all_notes')
+async def del_note_prompt(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
+    await state.set_state(NoteForm.confirm_deleting_notes)
+    await callback.message.edit_text(
+        "⚠️ *ВНИМАНИЕ!*\n\n"
+        "Вы собираетесь удалить ВСЕ свои заметки.\n"
+        "Это действие НЕЛЬЗЯ отменить.\n"
+        "Вы уверены?\n\n"
+        "Напишите да/нет или +/-",
+        reply_markup=main_menu
+    )
+
+
+@router.message(NoteForm.confirm_deleting_notes)
+async def del_note(message: Message, state: FSMContext):
+    confirmation = message.text.strip().lower()
+    if confirmation in ['нет', '-']:
+        text = 'Удаление всех заметок отменено'
+    elif confirmation in ['да', '+']:
+        amount = clear_user_notes(message.from_user.id)
+        text = f'Количество удаленных заметок = {amount}'    
+    else:
+        text =  "❌ Неправильный формат ответа.\n\nНапишите да/нет или +/-"
+
+    await message.answer(
+        text, 
+        reply_markup=main_menu
+    )
 

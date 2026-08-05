@@ -26,6 +26,7 @@ def init_db():
         """)
         logger.info("База данных инициализирована")
 
+
 def save_note(user_id: int, note_name: str, note_text: str, remind_at: str) -> int:
     """Сохраняет заметку и возвращает её ID"""
     with sqlite3.connect(DB_PATH) as conn:
@@ -40,6 +41,7 @@ def save_note(user_id: int, note_name: str, note_text: str, remind_at: str) -> i
 
         logger.info(f"Заметка #{note_id} сохранена для пользователя {user_id}")
         return note_id
+
 
 def get_due_reminders() -> list:
     """
@@ -58,6 +60,7 @@ def get_due_reminders() -> list:
         """)
         return cursor.fetchall()
 
+
 def mark_reminder_sent(note_id: int):
     """Помечает напоминание как отправленное"""
     with sqlite3.connect(DB_PATH) as conn:
@@ -70,6 +73,7 @@ def mark_reminder_sent(note_id: int):
         """, (note_id,))
     
         logger.info(f"Напоминание #{note_id} помечено как отправленное")
+
 
 def update_remind_time(note_id: int, user_id: int, remind_at: str) -> bool:
     """Устанавливает время напоминания для заметки"""
@@ -84,6 +88,7 @@ def update_remind_time(note_id: int, user_id: int, remind_at: str) -> bool:
     
         return cursor.rowcount > 0
 
+
 def update_note(note_id: int, user_id: int, note_text: str) -> bool:
     """Изменяет текст заметки"""
     with sqlite3.connect(DB_PATH) as conn:
@@ -96,6 +101,7 @@ def update_note(note_id: int, user_id: int, note_text: str) -> bool:
             """, (note_text, note_id, user_id))
         
             return cursor.rowcount > 0
+
 
 def get_notes_by_name(user_id: int, search_term: str) -> list:
     """
@@ -114,6 +120,7 @@ def get_notes_by_name(user_id: int, search_term: str) -> list:
         
         return cursor.fetchall()        # возвращает список кортежей. Каждый кортеж — это одна строка из таблицы.
 
+
 def show_all_notes(user_id: int) -> list:
     """Возвращает все заметки пользователя"""
     with sqlite3.connect(DB_PATH) as conn:
@@ -127,6 +134,7 @@ def show_all_notes(user_id: int) -> list:
         """, (user_id,))
     
     return cursor.fetchall()
+
 
 def delete_note(note_id: int, user_id: int) -> bool:
     """Удаляет заметку"""
@@ -142,11 +150,52 @@ def delete_note(note_id: int, user_id: int) -> bool:
     
     return deleted
 
-def clear_table(table_name: str) -> None:
-    """Удаляет все записи из указанной таблицы"""
+
+def clear_user_notes(user_id: int) -> int:
+    """Удаляет все заметки пользователя. Возвращает количество удалённых записей."""
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
-        cursor.execute(f"DELETE FROM {table_name}")
-   
-        logger.info(f"Таблица {table_name} очищена")
+        cursor.execute("DELETE FROM notes WHERE user_id = ?", (user_id,))
+        deleted = cursor.rowcount
+        conn.commit()
+        return deleted
+
+def reset_table() -> None:
+    """
+    Удаляет таблицу notes и создаёт заново.
+    ID сбрасываются на 1.
+    """
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute("DROP TABLE IF EXISTS notes")
+    
+    # Пересоздаём таблицу через init_db()
+    init_db()
+    logger.info("Таблица notes пересоздана")
+
+
+def get_stats() -> dict:
+    """Возвращает статистику по базе данных"""
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        
+        # Всего пользователей
+        cursor.execute("SELECT COUNT(DISTINCT user_id) FROM notes")
+        total_users = cursor.fetchone()[0]
+        
+        # Всего заметок
+        cursor.execute("SELECT COUNT(*) FROM notes")
+        total_notes = cursor.fetchone()[0]
+        
+        # Активные напоминания
+        cursor.execute("SELECT COUNT(*) FROM notes WHERE remind_at IS NOT NULL AND is_reminded = 0")
+        active_reminders = cursor.fetchone()[0]
+        
+                
+        return {
+            "total_users": total_users,
+            "total_notes": total_notes,
+            "active_reminders": active_reminders,
+        }
+
 

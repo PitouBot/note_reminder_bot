@@ -20,7 +20,23 @@ main_menu = InlineKeyboardMarkup(inline_keyboard=[
         InlineKeyboardButton(text="🗑️ Удалить запись", callback_data='delete_note')
     ],
     [
+        InlineKeyboardButton(text="🗑️ Удалить все записи", callback_data='delete_all_notes')
+    ],
+    [
         InlineKeyboardButton(text="❓ Помощь", callback_data="help")
     ],
 ])
 
+admin_menu = InlineKeyboardMarkup(inline_keyboard=[
+    [
+        InlineKeyboardButton(text="📊 Статистика", callback_data="admin_stats"),
+    ],
+    [
+        InlineKeyboardButton(text="🔄 Сбросить таблицу", callback_data="admin_reset_table")
+    ],
+])
+
+reset_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="⚠️ ДА, сбросить таблицу", callback_data="admin_reset_confirm")],
+        [InlineKeyboardButton(text="❌ Нет, отмена", callback_data="admin_cancel")]
+    ])
